@@ -11,12 +11,13 @@
     <div>
       <div class="eyebrow">CARPETA MADRE</div>
       <h1>Zapatazo</h1>
-      <p>Gestión simple de programas, promos, redes y emisiones.</p>
+      <p>Gestión compartida de programas, promos, redes y emisiones.</p>
     </div>
     <button id="btnNuevo" class="primary">+ Nuevo programa</button>
   </header>
 
   <main class="container">
+    <div id="estadoConexion" class="mini" style="margin-bottom:12px">Conectando con la base compartida...</div>
     <section class="stats" id="stats"></section>
 
     <section class="tabs">
@@ -55,26 +56,13 @@
         <h2 id="modalTitle">Nuevo programa</h2>
         <button type="button" id="cerrarModal" class="icon-btn">✕</button>
       </div>
-
       <input type="hidden" id="programaId" />
 
       <div class="form-grid">
-        <label>
-          Nombre / edición
-          <input id="nombre" required placeholder="Ej: Zapatazo #24" />
-        </label>
-        <label>
-          Fecha de emisión
-          <input id="fecha" type="date" required />
-        </label>
-        <label>
-          Hora
-          <input id="hora" type="time" />
-        </label>
-        <label>
-          Canal / plataforma
-          <input id="canal" placeholder="Ej: Canal Z - YouTube" />
-        </label>
+        <label>Nombre / edición<input id="nombre" required placeholder="Ej: Zapatazo #24" /></label>
+        <label>Fecha de emisión<input id="fecha" type="date" required /></label>
+        <label>Hora<input id="hora" type="time" /></label>
+        <label>Canal / plataforma<input id="canal" placeholder="Ej: Canal Z - YouTube" /></label>
       </div>
 
       <h3>Programa principal</h3>
@@ -99,8 +87,7 @@
         <label><input type="checkbox" id="redes_youtube" /> Subidos a YouTube</label>
       </div>
 
-      <label class="full">
-        Observaciones
+      <label class="full">Observaciones
         <textarea id="observaciones" rows="4" placeholder="Comentarios, pendientes, datos importantes..."></textarea>
       </label>
 
@@ -113,6 +100,7 @@
     </form>
   </dialog>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

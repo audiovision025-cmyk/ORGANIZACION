@@ -1,20 +1,17 @@
-ZAPATAZO - APP DE PRODUCCIÓN TV
+ZAPATAZO COMPARTIDO
 
-ARCHIVOS:
-- index.html
-- styles.css
-- app.js
+1) En Supabase:
+   SQL Editor > New query
+   Abrir supabase-setup.sql, copiar todo y ejecutar Run.
 
-CÓMO USAR:
-1. Abrir la carpeta "Zapatazo".
-2. Hacer doble clic en index.html.
-3. Agregar programas desde "+ Nuevo programa".
-4. Los datos quedan guardados en el navegador de esa computadora.
+2) En GitHub:
+   Repositorio ORGANIZACION
+   Reemplazar index.html, app.js y styles.css por estos archivos.
 
-IMPORTANTE SOBRE COMPARTIR:
-Esta versión funciona sin servidor y guarda los datos localmente.
-Si varias personas abren una copia distinta, cada una tendrá sus propios datos.
+3) Esperar unos minutos y abrir GitHub Pages.
 
-Para trabajo colaborativo real entre varias personas al mismo tiempo,
-esta misma interfaz puede conectarse a una base de datos online (por ejemplo Supabase/Firebase)
-y publicarse en una URL.
+Todos los usuarios que entren al mismo link compartirán los mismos datos.
+
+IMPORTANTE:
+Esta versión permite editar a cualquiera que tenga el enlace.
+Si querés seguridad por usuario/contraseña, hay que agregar autenticación.
