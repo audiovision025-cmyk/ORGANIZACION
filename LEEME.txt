@@ -1,0 +1,20 @@
+ZAPATAZO - APP DE PRODUCCIÓN TV
+
+ARCHIVOS:
+- index.html
+- styles.css
+- app.js
+
+CÓMO USAR:
+1. Abrir la carpeta "Zapatazo".
+2. Hacer doble clic en index.html.
+3. Agregar programas desde "+ Nuevo programa".
+4. Los datos quedan guardados en el navegador de esa computadora.
+
+IMPORTANTE SOBRE COMPARTIR:
+Esta versión funciona sin servidor y guarda los datos localmente.
+Si varias personas abren una copia distinta, cada una tendrá sus propios datos.
+
+Para trabajo colaborativo real entre varias personas al mismo tiempo,
+esta misma interfaz puede conectarse a una base de datos online (por ejemplo Supabase/Firebase)
+y publicarse en una URL.
