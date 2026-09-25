@@ -63,3 +63,52 @@ input,textarea,select{background:#151310;color:var(--text);border:1px solid var(
   .calendar-main{padding:12px}
   .calendar-grid{grid-template-columns:repeat(7,minmax(170px,1fr))}
 }
+
+.overall-progress{
+  background:linear-gradient(135deg,#1d1913,#241d12);
+  border:1px solid #4a3a20;
+  border-radius:14px;
+  padding:14px 16px;
+  margin-bottom:16px;
+}
+.overall-progress-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:9px;
+}
+.overall-progress-top span{
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:1.2px;
+}
+.overall-progress-top strong{
+  font-size:28px;
+  color:var(--accent2);
+}
+.overall-progress-bar{
+  height:12px;
+  background:#2b261f;
+  border-radius:999px;
+  overflow:hidden;
+}
+.overall-progress-bar>div{
+  height:100%;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border-radius:999px;
+}
+.event-comment{
+  margin-top:6px;
+  padding:6px 7px;
+  background:rgba(255,255,255,.06);
+  border-radius:6px;
+  color:#f3eee5;
+  font-size:11px;
+  line-height:1.35;
+}
+.event-card.complete .event-comment{
+  background:rgba(76,175,115,.10);
+  color:#d8f5e2;
+}
