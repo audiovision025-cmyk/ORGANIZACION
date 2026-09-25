@@ -18,26 +18,13 @@
 
   <main class="container">
     <div id="estadoConexion" class="mini" style="margin-bottom:12px">Conectando con la base compartida...</div>
-    <section class="stats" id="stats"></section>
 
     <section class="tabs">
-      <button class="tab active" data-tab="programas">Programas</button>
-      <button class="tab" data-tab="calendario">Calendario</button>
+      <button class="tab active" data-tab="calendario">Calendario</button>
+      <button class="tab" data-tab="programas">Programas</button>
     </section>
 
-    <section id="programas" class="tab-panel active">
-      <div class="toolbar">
-        <input id="buscar" type="search" placeholder="Buscar programa..." />
-        <select id="filtroEstado">
-          <option value="todos">Todos</option>
-          <option value="pendientes">Con pendientes</option>
-          <option value="completos">Completos</option>
-        </select>
-      </div>
-      <div id="listaProgramas" class="program-list"></div>
-    </section>
-
-    <section id="calendario" class="tab-panel">
+    <section id="calendario" class="tab-panel active calendar-main">
       <div class="calendar-head">
         <button id="prevMes">←</button>
         <h2 id="mesTitulo"></h2>
@@ -47,6 +34,20 @@
         <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
       </div>
       <div id="calendarGrid" class="calendar-grid"></div>
+    </section>
+
+    <section class="stats" id="stats"></section>
+
+    <section id="programas" class="tab-panel">
+      <div class="toolbar">
+        <input id="buscar" type="search" placeholder="Buscar programa..." />
+        <select id="filtroEstado">
+          <option value="todos">Todos</option>
+          <option value="pendientes">Con pendientes</option>
+          <option value="completos">Completos</option>
+        </select>
+      </div>
+      <div id="listaProgramas" class="program-list"></div>
     </section>
   </main>
 
