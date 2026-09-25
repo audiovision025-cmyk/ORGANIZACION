@@ -1,4 +1,3 @@
-
 :root {
   --bg:#11100e; --panel:#1a1815; --panel2:#211e1a; --text:#f5efe6;
   --muted:#a99f92; --accent:#d79a2b; --accent2:#f2c35d; --ok:#4caf73;
@@ -10,9 +9,9 @@ button,input,select,textarea{font:inherit}
 .topbar{display:flex;justify-content:space-between;gap:24px;align-items:center;padding:28px 36px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,#17130d,#1b1814)}
 .topbar h1{margin:2px 0 4px;font-size:36px}.topbar p{margin:0;color:var(--muted)}
 .eyebrow{color:var(--accent2);font-size:12px;font-weight:700;letter-spacing:1.8px}
-.container{max-width:1200px;margin:auto;padding:28px}
+.container{max-width:1400px;margin:auto;padding:28px}
 .primary{background:var(--accent);color:#15110b;border:0;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px;margin-bottom:22px}
 .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
 .stat strong{display:block;font-size:28px;margin-bottom:4px}.stat span{color:var(--muted)}
 .tabs{display:flex;gap:8px;margin-bottom:16px}.tab{background:transparent;color:var(--muted);border:1px solid var(--line);padding:10px 16px;border-radius:10px;cursor:pointer}
@@ -26,10 +25,28 @@ button,input,select,textarea{font:inherit}
 .mini{color:var(--muted);font-size:13px;line-height:1.5}.badge{padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
 .badge.ok{background:rgba(76,175,115,.15);color:#80d6a3}.badge.pending{background:rgba(226,169,59,.15);color:#f0c96f}
 .actions{display:flex;gap:8px;margin-top:14px}.actions button{background:#2a261f;color:var(--text);border:1px solid var(--line);padding:8px 12px;border-radius:8px;cursor:pointer}
-.calendar-head{display:flex;justify-content:center;align-items:center;gap:18px;margin:8px 0 18px}.calendar-head button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
-.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr)}.calendar-days div{color:var(--muted);text-align:center;padding:8px;font-size:13px}
-.day{min-height:120px;padding:9px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel)}.day.empty{opacity:.25}.day-num{font-weight:700;color:var(--muted);margin-bottom:8px}
-.event{display:block;background:#302718;color:#f5d389;border-left:3px solid var(--accent);border-radius:7px;padding:7px;margin:5px 0;font-size:12px;cursor:pointer}
+
+.calendar-main{background:#151310;border:1px solid var(--line);border-radius:16px;padding:18px}
+.calendar-head{display:flex;justify-content:center;align-items:center;gap:18px;margin:0 0 18px}
+.calendar-head h2{text-transform:capitalize;margin:0;font-size:28px}
+.calendar-head button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.calendar-days{border:1px solid var(--line);border-bottom:0;border-radius:12px 12px 0 0;overflow:hidden}
+.calendar-days div{color:var(--muted);text-align:center;padding:10px;font-size:13px;font-weight:700;background:#191713}
+#calendarGrid{border-left:1px solid var(--line);border-top:1px solid var(--line)}
+.day{min-height:175px;padding:10px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel)}
+.day.empty{opacity:.3}.day-num{font-weight:700;color:var(--muted);margin-bottom:8px;font-size:14px}
+.event-card{display:block;background:#302718;color:#f5d389;border:1px solid #5b4521;border-left:4px solid var(--accent);border-radius:9px;padding:9px;margin:6px 0;cursor:pointer}
+.event-card:hover{filter:brightness(1.08)}
+.event-card.complete{background:rgba(76,175,115,.15);border-color:rgba(76,175,115,.45);border-left-color:var(--ok);color:#b7efc9}
+.event-title{font-weight:800;font-size:13px;line-height:1.35}
+.event-time{display:inline-block;margin-right:6px;color:var(--accent2)}
+.event-card.complete .event-time{color:#9be0b5}
+.event-channel{margin-top:3px;font-size:11px;color:var(--muted)}
+.event-status{margin-top:6px;font-size:11px;line-height:1.35}
+.event-status.pending{color:#f0c96f}
+.event-status.complete{color:#80d6a3;font-weight:700}
+
 dialog{width:min(820px,94vw);border:none;border-radius:16px;padding:0;background:var(--panel);color:var(--text)}dialog::backdrop{background:rgba(0,0,0,.72)}
 #formPrograma{padding:22px}.modal-head{display:flex;justify-content:space-between;align-items:center}.icon-btn{background:transparent;color:var(--text);border:0;font-size:20px;cursor:pointer}
 .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}label{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:14px}
@@ -37,4 +54,12 @@ input,textarea,select{background:#151310;color:var(--text);border:1px solid var(
 .checks{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 14px;margin-bottom:16px}.checks label{flex-direction:row;align-items:center;color:var(--text)}.full{margin-top:10px}
 .modal-actions{display:flex;gap:10px;margin-top:20px}.spacer{flex:1}.danger{background:var(--danger);color:#fff;border:0;border-radius:9px;padding:10px 14px;cursor:pointer}.hidden{display:none}
 .empty-state{text-align:center;padding:50px 20px;color:var(--muted);background:var(--panel);border-radius:14px;border:1px dashed var(--line)}
-@media(max-width:800px){.topbar{padding:20px;align-items:flex-start;flex-direction:column}.container{padding:18px}.stats{grid-template-columns:repeat(2,1fr)}.status-grid,.form-grid,.checks{grid-template-columns:1fr}.calendar-grid{grid-template-columns:repeat(7,minmax(95px,1fr))}#calendario{overflow-x:auto}}
+@media(max-width:900px){
+  .topbar{padding:20px;align-items:flex-start;flex-direction:column}
+  .container{padding:18px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .status-grid,.form-grid,.checks{grid-template-columns:1fr}
+  #calendario{overflow-x:auto}
+  .calendar-main{padding:12px}
+  .calendar-grid{grid-template-columns:repeat(7,minmax(170px,1fr))}
+}
