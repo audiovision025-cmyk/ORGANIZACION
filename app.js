@@ -1,6 +1,3 @@
-const SUPABASE_URL='https://jcnyvqzgjqqdiwuinula.supabase.co';
-const SUPABASE_KEY='sb_publishable__ImxqupFGPBz1t7OfMzR9Q_tiGhL_Ua';
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const STORAGE_KEY='zapatazo_programas_v1';
 
 const checks=[
@@ -55,44 +52,37 @@ function estado(texto,ok=false){
 }
 
 async function cargarDatos(){
-  const [programasRes,repeticionesRes]=await Promise.all([
-    db.from('programas').select('*').order('fecha',{ascending:false}),
-    db.from('repeticiones').select('*').order('fecha',{ascending:false})
-  ]);
-
-  if(programasRes.error || repeticionesRes.error){
-    console.error(programasRes.error || repeticionesRes.error);
+  try{
+    const result=await writeViaFunction('load');
+    programas=result.programas||[];
+    repeticiones=result.repeticiones||[];
+    estado('● Datos compartidos sincronizados',true);
+    renderTodo();
+    return true;
+  }catch(error){
+    console.error(error);
     estado('Error al conectar con la base compartida.');
     return false;
   }
-
-  programas=programasRes.data||[];
-  repeticiones=repeticionesRes.data||[];
-
-  estado('● Datos compartidos sincronizados',true);
-  renderTodo();
-  return true;
 }
-
 async function migrarLocalSiHaceFalta(){
   const locales=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
   if(!locales.length || programas.length)return;
 
-  const limpios=locales.map(p=>{
-    const x={};
-    ['id','nombre','fecha','hora','canal','observaciones'].concat(checks).forEach(k=>{
-      x[k]=p[k]??(checks.includes(k)?false:null);
-    });
-    return x;
-  });
-
-  const res=await db.from('programas').upsert(limpios);
-  if(!res.error){
+  try{
+    for(const p of locales){
+      const data={};
+      ['id','nombre','fecha','hora','canal','observaciones'].concat(checks).forEach(k=>{
+        data[k]=p[k]??(checks.includes(k)?false:null);
+      });
+      await writeViaFunction('save_programa',{data});
+    }
     localStorage.removeItem(STORAGE_KEY);
     await cargarDatos();
+  }catch(error){
+    console.error('No se pudo migrar información local:',error);
   }
 }
-
 function progreso(p){
   return Math.round(checks.filter(k=>!!p[k]).length/checks.length*100);
 }
@@ -511,18 +501,11 @@ async function iniciar(){
 
   await migrarLocalSiHaceFalta();
 
-  db.channel('zapatazo-cambios')
-    .on(
-      'postgres_changes',
-      {event:'*',schema:'public',table:'programas'},
-      ()=>cargarDatos()
-    )
-    .on(
-      'postgres_changes',
-      {event:'*',schema:'public',table:'repeticiones'},
-      ()=>cargarDatos()
-    )
-    .subscribe();
+  // Actualiza los cambios compartidos sin depender de Realtime.
+  setInterval(()=>{
+    if(!$('modalPrograma').open){
+      cargarDatos();
+    }
+  },15000);
 }
-
 iniciar();
