@@ -13,7 +13,10 @@
       <h1>Zapatazo</h1>
       <p>Gestión compartida de programas, promos, redes y emisiones.</p>
     </div>
-    <button id="btnNuevo" class="primary">+ Nuevo programa</button>
+    <div class="header-actions">
+      <button id="btnRepeticion" class="secondary-orange">+ Repetición</button>
+      <button id="btnNuevo" class="primary">+ Nuevo programa</button>
+    </div>
   </header>
 
   <main class="container">
@@ -24,6 +27,7 @@
     <section class="tabs">
       <button class="tab active" data-tab="calendario">Calendario</button>
       <button class="tab" data-tab="programas">Programas</button>
+      <button class="tab" data-tab="repeticiones">Repeticiones</button>
     </section>
 
     <section id="calendario" class="tab-panel active calendar-main">
@@ -50,6 +54,10 @@
         </select>
       </div>
       <div id="listaProgramas" class="program-list"></div>
+    </section>
+
+    <section id="repeticiones" class="tab-panel">
+      <div id="listaRepeticiones" class="program-list"></div>
     </section>
   </main>
 
@@ -99,6 +107,45 @@
         <div class="spacer"></div>
         <button type="button" id="cancelar">Cancelar</button>
         <button type="submit" class="primary">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="modalRepeticion">
+    <form method="dialog" id="formRepeticion">
+      <div class="modal-head">
+        <h2 id="modalRepeticionTitle">Nueva repetición</h2>
+        <button type="button" id="cerrarRepeticion" class="icon-btn">✕</button>
+      </div>
+
+      <input type="hidden" id="repeticionId" />
+
+      <div class="form-grid">
+        <label>
+          Programa que se repite
+          <select id="repeticionPrograma" required></select>
+        </label>
+        <label>
+          Fecha de repetición
+          <input id="repeticionFecha" type="date" required />
+        </label>
+        <label>
+          Hora
+          <input id="repeticionHora" type="time" />
+        </label>
+      </div>
+
+      <h3>Estado</h3>
+      <div class="checks">
+        <label><input type="checkbox" id="repeticionPublicado" /> Publicado</label>
+        <label><input type="checkbox" id="repeticionPromoPublicada" /> Promo publicada</label>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" id="eliminarRepeticion" class="danger hidden">Eliminar</button>
+        <div class="spacer"></div>
+        <button type="button" id="cancelarRepeticion">Cancelar</button>
+        <button type="submit" class="secondary-orange">Guardar repetición</button>
       </div>
     </form>
   </dialog>
