@@ -112,3 +112,87 @@ input,textarea,select{background:#151310;color:var(--text);border:1px solid var(
   background:rgba(76,175,115,.10);
   color:#d8f5e2;
 }
+
+.header-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.secondary-orange{
+  background:#e97819;
+  color:#170d05;
+  border:0;
+  padding:12px 18px;
+  border-radius:10px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.secondary-orange:hover{
+  filter:brightness(1.08);
+}
+
+.badge.orange{
+  background:rgba(233,120,25,.16);
+  color:#ffad68;
+}
+
+.repetition-list-card{
+  border-left:4px solid #e97819;
+}
+
+.repetition-status-line{
+  margin-top:14px;
+  font-size:13px;
+  color:#d8c7b8;
+}
+
+.event-card.repetition{
+  background:rgba(233,120,25,.15);
+  border-color:rgba(233,120,25,.5);
+  border-left-color:#e97819;
+  color:#ffd1a8;
+}
+
+.event-card.repetition:hover{
+  background:rgba(233,120,25,.22);
+}
+
+.event-card.repetition.done{
+  background:rgba(233,120,25,.18);
+  border-color:rgba(233,120,25,.7);
+}
+
+.event-card.repetition .event-time{
+  color:#ffad68;
+}
+
+.event-type{
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:1.1px;
+  color:#ff9a45;
+  margin-bottom:4px;
+}
+
+.event-status.repetition-pending{
+  color:#ffc38e;
+}
+
+.event-status.repetition-done{
+  color:#ffd1a8;
+  font-weight:800;
+}
+
+#formRepeticion{
+  padding:22px;
+}
+
+@media(max-width:900px){
+  .header-actions{
+    width:100%;
+    justify-content:flex-start;
+  }
+}
