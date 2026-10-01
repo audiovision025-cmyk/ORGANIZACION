@@ -1,9 +1,10 @@
 const SUPABASE_URL='https://jcnyvqzgjqqdiwuinula.supabase.co';
 const SUPABASE_KEY='sb_publishable__ImxqupFGPBz1t7OfMzR9Q_tiGhL_Ua';
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
 const STORAGE_KEY='zapatazo_programas_v1';
 
-const checks=[
+const checksNormales=[
   'programa_editado','programa_miniatura','programa_publicado',
   'promo_hecho','promo_miniatura','promo_publicado',
   'redes_recortes','redes_miniaturas','redes_instagram','redes_youtube'
@@ -23,7 +24,6 @@ const labelsPendientes={
 };
 
 let programas=[];
-let repeticiones=[];
 let mesActual=new Date();
 
 const $=id=>document.getElementById(id);
@@ -34,59 +34,76 @@ function estado(texto,ok=false){
   el.style.color=ok?'#80d6a3':'#f0c96f';
 }
 
-async function cargarDatos(){
-  const [programasRes,repeticionesRes]=await Promise.all([
-    db.from('programas').select('*').order('fecha',{ascending:false}),
-    db.from('repeticiones').select('*').order('fecha',{ascending:false})
-  ]);
+async function cargarProgramas(){
+  const {data,error}=await db
+    .from('programas')
+    .select('*')
+    .order('fecha',{ascending:false});
 
-  if(programasRes.error || repeticionesRes.error){
-    console.error(programasRes.error || repeticionesRes.error);
+  if(error){
+    console.error(error);
     estado('Error al conectar con la base compartida.');
+    $('listaProgramas').innerHTML='<div class="empty-state">No se pudo cargar la información.</div>';
     return false;
   }
 
-  programas=programasRes.data||[];
-  repeticiones=repeticionesRes.data||[];
+  programas=data||[];
   estado('● Datos compartidos sincronizados',true);
   renderTodo();
   return true;
 }
+
 async function migrarLocalSiHaceFalta(){
   const locales=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
   if(!locales.length || programas.length)return;
 
   const limpios=locales.map(p=>{
-    const data={};
-    ['id','nombre','fecha','hora','canal','observaciones'].concat(checks).forEach(k=>{
-      data[k]=p[k]??(checks.includes(k)?false:null);
-    });
-    return data;
+    const x={
+      id:p.id,
+      nombre:p.nombre,
+      fecha:p.fecha,
+      hora:p.hora||null,
+      canal:p.canal||null,
+      observaciones:p.observaciones||null,
+      programa_repetido:false
+    };
+
+    checksNormales.forEach(k=>x[k]=!!p[k]);
+    return x;
   });
 
   const {error}=await db.from('programas').upsert(limpios);
+
   if(!error){
     localStorage.removeItem(STORAGE_KEY);
-    await cargarDatos();
+    await cargarProgramas();
   }
 }
-function progreso(p){
-  return Math.round(checks.filter(k=>!!p[k]).length/checks.length*100);
+
+function esRepetido(p){
+  return !!p.programa_repetido;
 }
 
-function pendientes(p){
-  return checks.filter(k=>!p[k]).map(k=>labelsPendientes[k]);
+function progresoPrograma(p){
+  if(esRepetido(p)){
+    const hechas=(p.programa_publicado?1:0)+(p.promo_publicado?1:0);
+    return Math.round(hechas/2*100);
+  }
+
+  return Math.round(
+    checksNormales.filter(k=>!!p[k]).length/checksNormales.length*100
+  );
 }
 
-function repeticionCompleta(r){
-  return !!r.publicado && !!r.promo_publicada;
-}
+function pendientesPrograma(p){
+  if(esRepetido(p)){
+    const faltan=[];
+    if(!p.programa_publicado)faltan.push('programa subido');
+    if(!p.promo_publicado)faltan.push('promo publicada');
+    return faltan;
+  }
 
-function pendientesRepeticion(r){
-  const faltan=[];
-  if(!r.publicado)faltan.push('programa subido');
-  if(!r.promo_publicada)faltan.push('promo publicada');
-  return faltan;
+  return checksNormales.filter(k=>!p[k]).map(k=>labelsPendientes[k]);
 }
 
 function formatoFecha(f){
@@ -98,10 +115,19 @@ function formatoFecha(f){
 }
 
 function renderProgresoGeneral(){
-  const totalItems=(programas.length*checks.length)+(repeticiones.length*2);
-  const completosProgramas=programas.reduce((acc,p)=>acc+checks.filter(k=>!!p[k]).length,0);
-  const completosRepeticiones=repeticiones.reduce((acc,r)=>acc+(r.publicado?1:0)+(r.promo_publicada?1:0),0);
-  const completos=completosProgramas+completosRepeticiones;
+  let totalItems=0;
+  let completos=0;
+
+  programas.forEach(p=>{
+    if(esRepetido(p)){
+      totalItems+=2;
+      completos+=(p.programa_publicado?1:0)+(p.promo_publicado?1:0);
+    }else{
+      totalItems+=checksNormales.length;
+      completos+=checksNormales.filter(k=>!!p[k]).length;
+    }
+  });
+
   const porcentaje=totalItems?Math.round(completos/totalItems*100):0;
 
   $('progresoGeneral').innerHTML=
@@ -109,18 +135,19 @@ function renderProgresoGeneral(){
       '<span>AVANCE TOTAL</span>'+
       '<strong>'+porcentaje+'%</strong>'+
     '</div>'+
-    '<div class="overall-progress-bar"><div style="width:'+porcentaje+'%"></div></div>';
+    '<div class="overall-progress-bar">'+
+      '<div style="width:'+porcentaje+'%"></div>'+
+    '</div>';
 }
 
 function renderStats(){
-  const completosProgramas=programas.filter(p=>progreso(p)===100).length;
-  const completasRepeticiones=repeticiones.filter(repeticionCompleta).length;
-  const completos=completosProgramas+completasRepeticiones;
-  const total=programas.length+repeticiones.length;
+  const total=programas.length;
+  const repetidos=programas.filter(esRepetido).length;
+  const completos=programas.filter(p=>progresoPrograma(p)===100).length;
 
   $('stats').innerHTML=
-    '<div class="stat"><strong>'+programas.length+'</strong><span>Programas</span></div>'+
-    '<div class="stat"><strong>'+repeticiones.length+'</strong><span>Repetidos</span></div>'+
+    '<div class="stat"><strong>'+total+'</strong><span>Programas cargados</span></div>'+
+    '<div class="stat"><strong>'+repetidos+'</strong><span>Programas repetidos</span></div>'+
     '<div class="stat"><strong>'+completos+'</strong><span>Completos</span></div>'+
     '<div class="stat"><strong>'+(total-completos)+'</strong><span>Con pendientes</span></div>';
 }
@@ -141,8 +168,13 @@ function renderProgramas(){
     (p.canal||'').toLowerCase().includes(q)
   );
 
-  if(filtro==='pendientes')lista=lista.filter(p=>progreso(p)<100);
-  if(filtro==='completos')lista=lista.filter(p=>progreso(p)===100);
+  if(filtro==='pendientes'){
+    lista=lista.filter(p=>progresoPrograma(p)<100);
+  }
+
+  if(filtro==='completos'){
+    lista=lista.filter(p=>progresoPrograma(p)===100);
+  }
 
   if(!lista.length){
     $('listaProgramas').innerHTML='<div class="empty-state">No hay programas para mostrar.</div>';
@@ -150,7 +182,25 @@ function renderProgramas(){
   }
 
   $('listaProgramas').innerHTML=lista.map(p=>{
-    const pr=progreso(p);
+    const pr=progresoPrograma(p);
+
+    if(esRepetido(p)){
+      return '<article class="card repetition-list-card">'+
+        '<div class="card-top">'+
+          '<div>'+
+            '<h3>'+escapeHtml(p.nombre)+'</h3>'+
+            '<div class="meta">Programa repetido · '+formatoFecha(p.fecha)+(p.hora?' · '+p.hora+' hs':'')+'</div>'+
+          '</div>'+
+          '<span class="badge '+(pr===100?'ok':'orange')+'">'+(pr===100?'Completo':pr+'%')+'</span>'+
+        '</div>'+
+        '<div class="repetition-status-line">'+
+          '<b>Programa subido:</b> '+(p.programa_publicado?'Sí':'No')+
+          ' &nbsp; · &nbsp; '+
+          '<b>Promo publicada:</b> '+(p.promo_publicado?'Sí':'No')+
+        '</div>'+
+        '<div class="actions"><button onclick="editarPrograma(\''+escapeAttr(p.id)+'\')">Abrir / editar</button></div>'+
+      '</article>';
+    }
 
     return '<article class="card">'+
       '<div class="card-top">'+
@@ -199,43 +249,30 @@ function renderCalendario(){
   for(let d=1;d<=last.getDate();d++){
     const iso=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
 
-    const eventosProgramas=programas
+    const eventos=programas
       .filter(p=>p.fecha===iso)
-      .map(p=>({tipo:'programa',hora:p.hora||'',data:p}));
-
-    const eventosRepeticiones=repeticiones
-      .filter(r=>r.fecha===iso)
-      .map(r=>({tipo:'repeticion',hora:r.hora||'',data:r}));
-
-    const eventos=eventosProgramas
-      .concat(eventosRepeticiones)
       .sort((a,b)=>(a.hora||'99:99').localeCompare(b.hora||'99:99'));
 
     html+='<div class="day"><div class="day-num">'+d+'</div>';
 
-    html+=eventos.map(ev=>{
-      if(ev.tipo==='repeticion'){
-        const r=ev.data;
-        const completa=repeticionCompleta(r);
-        const faltan=pendientesRepeticion(r);
+    html+=eventos.map(p=>{
+      const completo=progresoPrograma(p)===100;
+      const faltan=pendientesPrograma(p);
 
-        const detalle=completa
+      if(esRepetido(p)){
+        const detalle=completo
           ? '<div class="event-status repetition-done">✓ Repetición completa</div>'
           : '<div class="event-status repetition-pending"><b>Falta:</b> '+faltan.map(escapeHtml).join(', ')+'</div>';
 
-        return '<div class="event-card repetition '+(completa?'done':'')+'" onclick="editarRepeticion(\''+escapeAttr(r.id)+'\')">'+
+        return '<div class="event-card repetition '+(completo?'done':'')+'" onclick="editarPrograma(\''+escapeAttr(p.id)+'\')">'+
           '<div class="event-type">PROGRAMA REPETIDO</div>'+
           '<div class="event-title">'+
-            (r.hora?'<span class="event-time">'+r.hora+'</span>':'')+
-            escapeHtml(r.programa_nombre)+
+            (p.hora?'<span class="event-time">'+p.hora+'</span>':'')+
+            escapeHtml(p.nombre)+
           '</div>'+
           detalle+
         '</div>';
       }
-
-      const p=ev.data;
-      const completo=progreso(p)===100;
-      const faltan=pendientes(p);
 
       const detalle=completo
         ? '<div class="event-status complete">✓ Todo completo</div>'
@@ -265,21 +302,17 @@ function renderTodo(){
   renderCalendario();
 }
 
-function aplicarModoRepetido(repetido,bloquearSelector=false){
+function aplicarModoRepetido(repetido){
   $('programaRepetido').checked=repetido;
-  $('programaRepetido').disabled=bloquearSelector;
-
   $('camposProgramaNormal').classList.toggle('hidden',repetido);
   $('camposProgramaRepetido').classList.toggle('hidden',!repetido);
   $('campoCanal').classList.toggle('hidden',repetido);
 
   if(repetido){
-    $('tipoRegistro').value='repeticion';
     $('modalTitle').textContent=$('programaId').value?'Editar programa repetido':'Nuevo programa repetido';
     $('guardarPrograma').textContent='Guardar repetido';
     $('guardarPrograma').classList.add('save-repeat');
   }else{
-    $('tipoRegistro').value='programa';
     $('modalTitle').textContent=$('programaId').value?'Editar programa':'Nuevo programa';
     $('guardarPrograma').textContent='Guardar';
     $('guardarPrograma').classList.remove('save-repeat');
@@ -289,10 +322,8 @@ function aplicarModoRepetido(repetido,bloquearSelector=false){
 function limpiarForm(){
   $('formPrograma').reset();
   $('programaId').value='';
-  $('tipoRegistro').value='programa';
-  $('programaRepetido').disabled=false;
   $('eliminar').classList.add('hidden');
-  aplicarModoRepetido(false,false);
+  aplicarModoRepetido(false);
 }
 
 function abrirNuevo(){
@@ -314,120 +345,90 @@ window.editarPrograma=function(id){
   limpiarForm();
 
   $('programaId').value=p.id;
-  $('tipoRegistro').value='programa';
-
-  aplicarModoRepetido(false,true);
-
   $('nombre').value=p.nombre||'';
   $('fecha').value=p.fecha||'';
   $('hora').value=p.hora||'';
-  $('canal').value=p.canal||'';
-  $('observaciones').value=p.observaciones||'';
 
-  checks.forEach(k=>{
-    $(k).checked=!!p[k];
-  });
+  aplicarModoRepetido(esRepetido(p));
 
-  $('eliminar').classList.remove('hidden');
-  $('modalPrograma').showModal();
-};
+  if(esRepetido(p)){
+    $('repeticionPublicado').checked=!!p.programa_publicado;
+    $('repeticionPromoPublicada').checked=!!p.promo_publicado;
+  }else{
+    $('canal').value=p.canal||'';
+    $('observaciones').value=p.observaciones||'';
 
-window.editarRepeticion=function(id){
-  const r=repeticiones.find(x=>x.id===id);
-  if(!r)return;
-
-  limpiarForm();
-
-  $('programaId').value=r.id;
-  $('tipoRegistro').value='repeticion';
-
-  aplicarModoRepetido(true,true);
-
-  $('nombre').value=r.programa_nombre||'';
-  $('fecha').value=r.fecha||'';
-  $('hora').value=r.hora||'';
-
-  $('repeticionPublicado').checked=!!r.publicado;
-  $('repeticionPromoPublicada').checked=!!r.promo_publicada;
+    checksNormales.forEach(k=>{
+      $(k).checked=!!p[k];
+    });
+  }
 
   $('eliminar').classList.remove('hidden');
   $('modalPrograma').showModal();
 };
 
 $('programaRepetido').addEventListener('change',()=>{
-  aplicarModoRepetido($('programaRepetido').checked,false);
+  aplicarModoRepetido($('programaRepetido').checked);
 });
 
 $('formPrograma').addEventListener('submit',async e=>{
   e.preventDefault();
 
-  const tipo=$('tipoRegistro').value;
-  const idExistente=$('programaId').value;
+  const repetido=$('programaRepetido').checked;
 
-  if(tipo==='repeticion'){
-    const data={
-      id:idExistente||('rep-'+Date.now()),
-      programa_id:null,
-      programa_nombre:$('nombre').value.trim(),
-      fecha:$('fecha').value,
-      hora:$('hora').value||null,
-      publicado:$('repeticionPublicado').checked,
-      promo_publicada:$('repeticionPromoPublicada').checked,
-      updated_at:new Date().toISOString()
-    };
+  const data={
+    id:$('programaId').value||String(Date.now()),
+    nombre:$('nombre').value.trim(),
+    fecha:$('fecha').value,
+    hora:$('hora').value||null,
+    programa_repetido:repetido,
+    updated_at:new Date().toISOString()
+  };
 
-    const {error}=await db.from('repeticiones').upsert(data);
-    if(error){
-      alert('No se pudo guardar el programa repetido: '+error.message);
-      return;
-    }
+  if(repetido){
+    data.canal=null;
+    data.observaciones=null;
+
+    checksNormales.forEach(k=>data[k]=false);
+
+    data.programa_publicado=$('repeticionPublicado').checked;
+    data.promo_publicado=$('repeticionPromoPublicada').checked;
   }else{
-    const data={
-      id:idExistente||String(Date.now()),
-      nombre:$('nombre').value.trim(),
-      fecha:$('fecha').value,
-      hora:$('hora').value||null,
-      canal:$('canal').value.trim()||null,
-      observaciones:$('observaciones').value.trim()||null,
-      updated_at:new Date().toISOString()
-    };
+    data.canal=$('canal').value.trim()||null;
+    data.observaciones=$('observaciones').value.trim()||null;
 
-    checks.forEach(k=>{
+    checksNormales.forEach(k=>{
       data[k]=$(k).checked;
     });
+  }
 
-    const {error}=await db.from('programas').upsert(data);
-    if(error){
-      alert('No se pudo guardar: '+error.message);
-      return;
-    }
+  const {error}=await db.from('programas').upsert(data);
+
+  if(error){
+    console.error(error);
+    alert('No se pudo guardar: '+error.message);
+    return;
   }
 
   $('modalPrograma').close();
-  await cargarDatos();
+  await cargarProgramas();
 });
 
 $('eliminar').addEventListener('click',async()=>{
   const id=$('programaId').value;
-  const tipo=$('tipoRegistro').value;
-
   if(!id)return;
 
-  const texto=tipo==='repeticion'
-    ? '¿Eliminar este programa repetido?'
-    : '¿Eliminar este programa?';
+  if(!confirm('¿Eliminar este programa?'))return;
 
-  if(!confirm(texto))return;
+  const {error}=await db.from('programas').delete().eq('id',id);
 
-  const tabla=tipo==='repeticion'?'repeticiones':'programas';
-  const {error}=await db.from(tabla).delete().eq('id',id);
   if(error){
     alert('No se pudo eliminar: '+error.message);
     return;
   }
 
   $('modalPrograma').close();
-  await cargarDatos();
+  await cargarProgramas();
 });
 
 $('btnNuevo').addEventListener('click',abrirNuevo);
@@ -481,14 +482,19 @@ function escapeAttr(s=''){
 }
 
 async function iniciar(){
-  const ok=await cargarDatos();
-  if(!ok)return;
+  const ok=await cargarProgramas();
 
-  await migrarLocalSiHaceFalta();
+  if(ok){
+    await migrarLocalSiHaceFalta();
 
-  db.channel('zapatazo-cambios')
-    .on('postgres_changes',{event:'*',schema:'public',table:'programas'},()=>cargarDatos())
-    .on('postgres_changes',{event:'*',schema:'public',table:'repeticiones'},()=>cargarDatos())
-    .subscribe();
+    db.channel('programas-compartidos')
+      .on(
+        'postgres_changes',
+        {event:'*',schema:'public',table:'programas'},
+        ()=>cargarProgramas()
+      )
+      .subscribe();
+  }
 }
+
 iniciar();
