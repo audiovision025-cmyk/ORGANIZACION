@@ -13,10 +13,7 @@
       <h1>Zapatazo</h1>
       <p>Gestión compartida de programas, promos, redes y emisiones.</p>
     </div>
-    <div class="header-actions">
-      <button id="btnRepeticion" class="secondary-orange">+ Repetición</button>
-      <button id="btnNuevo" class="primary">+ Nuevo programa</button>
-    </div>
+    <button id="btnNuevo" class="primary">+ Nuevo programa</button>
   </header>
 
   <main class="container">
@@ -27,7 +24,6 @@
     <section class="tabs">
       <button class="tab active" data-tab="calendario">Calendario</button>
       <button class="tab" data-tab="programas">Programas</button>
-      <button class="tab" data-tab="repeticiones">Repeticiones</button>
     </section>
 
     <section id="calendario" class="tab-panel active calendar-main">
@@ -55,10 +51,6 @@
       </div>
       <div id="listaProgramas" class="program-list"></div>
     </section>
-
-    <section id="repeticiones" class="tab-panel">
-      <div id="listaRepeticiones" class="program-list"></div>
-    </section>
   </main>
 
   <dialog id="modalPrograma">
@@ -67,85 +59,75 @@
         <h2 id="modalTitle">Nuevo programa</h2>
         <button type="button" id="cerrarModal" class="icon-btn">✕</button>
       </div>
+
       <input type="hidden" id="programaId" />
+      <input type="hidden" id="tipoRegistro" value="programa" />
+
+      <label class="repeat-toggle">
+        <input type="checkbox" id="programaRepetido" />
+        <span><b>Programa repetido</b><small>Usar solo nombre, fecha y estados de publicación.</small></span>
+      </label>
 
       <div class="form-grid">
-        <label>Nombre / edición<input id="nombre" required placeholder="Ej: Zapatazo #24" /></label>
-        <label>Fecha de emisión<input id="fecha" type="date" required /></label>
-        <label>Hora<input id="hora" type="time" /></label>
-        <label>Canal / plataforma<input id="canal" placeholder="Ej: Canal Z - YouTube" /></label>
+        <label>
+          Nombre del programa
+          <input id="nombre" required placeholder="Ej: Zapatazo #24" />
+        </label>
+        <label>
+          Fecha de emisión
+          <input id="fecha" type="date" required />
+        </label>
+        <label>
+          Hora
+          <input id="hora" type="time" />
+        </label>
+        <label id="campoCanal">
+          Canal / plataforma
+          <input id="canal" placeholder="Ej: Canal Z - YouTube" />
+        </label>
       </div>
 
-      <h3>Programa principal</h3>
-      <div class="checks">
-        <label><input type="checkbox" id="programa_editado" /> Editado</label>
-        <label><input type="checkbox" id="programa_miniatura" /> Miniatura</label>
-        <label><input type="checkbox" id="programa_publicado" /> Publicado</label>
+      <div id="camposProgramaNormal">
+        <h3>Programa principal</h3>
+        <div class="checks">
+          <label><input type="checkbox" id="programa_editado" /> Editado</label>
+          <label><input type="checkbox" id="programa_miniatura" /> Miniatura</label>
+          <label><input type="checkbox" id="programa_publicado" /> Publicado</label>
+        </div>
+
+        <h3>Promo</h3>
+        <div class="checks">
+          <label><input type="checkbox" id="promo_hecho" /> Promo hecho</label>
+          <label><input type="checkbox" id="promo_miniatura" /> Miniatura</label>
+          <label><input type="checkbox" id="promo_publicado" /> Publicado</label>
+        </div>
+
+        <h3>Recortes para redes</h3>
+        <div class="checks">
+          <label><input type="checkbox" id="redes_recortes" /> Recortes hechos</label>
+          <label><input type="checkbox" id="redes_miniaturas" /> Miniaturas hechas</label>
+          <label><input type="checkbox" id="redes_instagram" /> Subidos a Instagram</label>
+          <label><input type="checkbox" id="redes_youtube" /> Subidos a YouTube</label>
+        </div>
+
+        <label class="full">Observaciones
+          <textarea id="observaciones" rows="4" placeholder="Comentarios, pendientes, datos importantes..."></textarea>
+        </label>
       </div>
 
-      <h3>Promo</h3>
-      <div class="checks">
-        <label><input type="checkbox" id="promo_hecho" /> Promo hecho</label>
-        <label><input type="checkbox" id="promo_miniatura" /> Miniatura</label>
-        <label><input type="checkbox" id="promo_publicado" /> Publicado</label>
+      <div id="camposProgramaRepetido" class="hidden">
+        <h3>Estado de la repetición</h3>
+        <div class="checks repeated-checks">
+          <label><input type="checkbox" id="repeticionPublicado" /> Programa subido</label>
+          <label><input type="checkbox" id="repeticionPromoPublicada" /> Promo publicada</label>
+        </div>
       </div>
-
-      <h3>Recortes para redes</h3>
-      <div class="checks">
-        <label><input type="checkbox" id="redes_recortes" /> Recortes hechos</label>
-        <label><input type="checkbox" id="redes_miniaturas" /> Miniaturas hechas</label>
-        <label><input type="checkbox" id="redes_instagram" /> Subidos a Instagram</label>
-        <label><input type="checkbox" id="redes_youtube" /> Subidos a YouTube</label>
-      </div>
-
-      <label class="full">Observaciones
-        <textarea id="observaciones" rows="4" placeholder="Comentarios, pendientes, datos importantes..."></textarea>
-      </label>
 
       <div class="modal-actions">
         <button type="button" id="eliminar" class="danger hidden">Eliminar</button>
         <div class="spacer"></div>
         <button type="button" id="cancelar">Cancelar</button>
-        <button type="submit" class="primary">Guardar</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog id="modalRepeticion">
-    <form method="dialog" id="formRepeticion">
-      <div class="modal-head">
-        <h2 id="modalRepeticionTitle">Nueva repetición</h2>
-        <button type="button" id="cerrarRepeticion" class="icon-btn">✕</button>
-      </div>
-
-      <input type="hidden" id="repeticionId" />
-
-      <div class="form-grid">
-        <label>
-          Programa que se repite
-          <select id="repeticionPrograma" required></select>
-        </label>
-        <label>
-          Fecha de repetición
-          <input id="repeticionFecha" type="date" required />
-        </label>
-        <label>
-          Hora
-          <input id="repeticionHora" type="time" />
-        </label>
-      </div>
-
-      <h3>Estado</h3>
-      <div class="checks">
-        <label><input type="checkbox" id="repeticionPublicado" /> Publicado</label>
-        <label><input type="checkbox" id="repeticionPromoPublicada" /> Promo publicada</label>
-      </div>
-
-      <div class="modal-actions">
-        <button type="button" id="eliminarRepeticion" class="danger hidden">Eliminar</button>
-        <div class="spacer"></div>
-        <button type="button" id="cancelarRepeticion">Cancelar</button>
-        <button type="submit" class="secondary-orange">Guardar repetición</button>
+        <button type="submit" id="guardarPrograma" class="primary">Guardar</button>
       </div>
     </form>
   </dialog>
