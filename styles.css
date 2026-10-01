@@ -196,3 +196,54 @@ input,textarea,select{background:#151310;color:var(--text);border:1px solid var(
     justify-content:flex-start;
   }
 }
+
+.repeat-toggle{
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  gap:10px;
+  margin:14px 0 18px;
+  padding:12px 14px;
+  border:1px solid #5d421d;
+  background:rgba(233,120,25,.08);
+  border-radius:10px;
+  color:var(--text);
+  cursor:pointer;
+}
+
+.repeat-toggle input{
+  width:18px;
+  height:18px;
+  flex:0 0 auto;
+}
+
+.repeat-toggle span{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.repeat-toggle small{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.repeated-checks{
+  margin-top:8px;
+}
+
+.save-repeat{
+  background:#e97819 !important;
+  color:#170d05 !important;
+}
+
+.event-card.repetition{
+  background:rgba(233,120,25,.16);
+  border-color:rgba(233,120,25,.55);
+  border-left-color:#e97819;
+}
+
+.event-card.repetition.done{
+  background:rgba(233,120,25,.22);
+  border-color:rgba(233,120,25,.75);
+}
