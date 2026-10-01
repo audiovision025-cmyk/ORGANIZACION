@@ -28,6 +28,26 @@ let mesActual=new Date();
 
 const $=id=>document.getElementById(id);
 
+const WRITE_URL='https://jcnyvqzgjqqdiwuinula.supabase.co/functions/v1/zapatazo-write';
+const WRITE_TOKEN='zapatazo-write-2026-v1';
+
+async function writeViaFunction(action,payload={}){
+  const response=await fetch(WRITE_URL,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=UTF-8'},
+    body:JSON.stringify({token:WRITE_TOKEN,action,...payload})
+  });
+
+  let result={};
+  try{ result=await response.json(); }catch(_){}
+
+  if(!response.ok || result.error){
+    throw new Error(result.error || ('HTTP '+response.status));
+  }
+
+  return result;
+}
+
 function estado(texto,ok=false){
   const el=$('estadoConexion');
   el.textContent=texto;
@@ -379,10 +399,10 @@ $('formPrograma').addEventListener('submit',async e=>{
       updated_at:new Date().toISOString()
     };
 
-    const res=await db.from('repeticiones').upsert(data);
-
-    if(res.error){
-      alert('No se pudo guardar el programa repetido: '+res.error.message);
+    try{
+      await writeViaFunction('save_repeticion',{data});
+    }catch(error){
+      alert('No se pudo guardar el programa repetido: '+error.message);
       return;
     }
   }else{
@@ -400,10 +420,10 @@ $('formPrograma').addEventListener('submit',async e=>{
       data[k]=$(k).checked;
     });
 
-    const res=await db.from('programas').upsert(data);
-
-    if(res.error){
-      alert('No se pudo guardar: '+res.error.message);
+    try{
+      await writeViaFunction('save_programa',{data});
+    }catch(error){
+      alert('No se pudo guardar: '+error.message);
       return;
     }
   }
@@ -424,11 +444,10 @@ $('eliminar').addEventListener('click',async()=>{
 
   if(!confirm(texto))return;
 
-  const tabla=tipo==='repeticion'?'repeticiones':'programas';
-  const res=await db.from(tabla).delete().eq('id',id);
-
-  if(res.error){
-    alert('No se pudo eliminar: '+res.error.message);
+  try{
+    await writeViaFunction(tipo==='repeticion'?'delete_repeticion':'delete_programa',{id});
+  }catch(error){
+    alert('No se pudo eliminar: '+error.message);
     return;
   }
 
