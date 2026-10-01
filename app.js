@@ -1,3 +1,6 @@
+const SUPABASE_URL='https://jcnyvqzgjqqdiwuinula.supabase.co';
+const SUPABASE_KEY='sb_publishable__ImxqupFGPBz1t7OfMzR9Q_tiGhL_Ua';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const STORAGE_KEY='zapatazo_programas_v1';
 
 const checks=[
@@ -25,26 +28,6 @@ let mesActual=new Date();
 
 const $=id=>document.getElementById(id);
 
-const WRITE_URL='https://jcnyvqzgjqqdiwuinula.supabase.co/functions/v1/zapatazo-write';
-const WRITE_TOKEN='zapatazo-write-2026-v1';
-
-async function writeViaFunction(action,payload={}){
-  const response=await fetch(WRITE_URL,{
-    method:'POST',
-    headers:{'Content-Type':'text/plain;charset=UTF-8'},
-    body:JSON.stringify({token:WRITE_TOKEN,action,...payload})
-  });
-
-  let result={};
-  try{ result=await response.json(); }catch(_){}
-
-  if(!response.ok || result.error){
-    throw new Error(result.error || ('HTTP '+response.status));
-  }
-
-  return result;
-}
-
 function estado(texto,ok=false){
   const el=$('estadoConexion');
   el.textContent=texto;
@@ -52,35 +35,39 @@ function estado(texto,ok=false){
 }
 
 async function cargarDatos(){
-  try{
-    const result=await writeViaFunction('load');
-    programas=result.programas||[];
-    repeticiones=result.repeticiones||[];
-    estado('● Datos compartidos sincronizados',true);
-    renderTodo();
-    return true;
-  }catch(error){
-    console.error(error);
+  const [programasRes,repeticionesRes]=await Promise.all([
+    db.from('programas').select('*').order('fecha',{ascending:false}),
+    db.from('repeticiones').select('*').order('fecha',{ascending:false})
+  ]);
+
+  if(programasRes.error || repeticionesRes.error){
+    console.error(programasRes.error || repeticionesRes.error);
     estado('Error al conectar con la base compartida.');
     return false;
   }
+
+  programas=programasRes.data||[];
+  repeticiones=repeticionesRes.data||[];
+  estado('● Datos compartidos sincronizados',true);
+  renderTodo();
+  return true;
 }
 async function migrarLocalSiHaceFalta(){
   const locales=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
   if(!locales.length || programas.length)return;
 
-  try{
-    for(const p of locales){
-      const data={};
-      ['id','nombre','fecha','hora','canal','observaciones'].concat(checks).forEach(k=>{
-        data[k]=p[k]??(checks.includes(k)?false:null);
-      });
-      await writeViaFunction('save_programa',{data});
-    }
+  const limpios=locales.map(p=>{
+    const data={};
+    ['id','nombre','fecha','hora','canal','observaciones'].concat(checks).forEach(k=>{
+      data[k]=p[k]??(checks.includes(k)?false:null);
+    });
+    return data;
+  });
+
+  const {error}=await db.from('programas').upsert(limpios);
+  if(!error){
     localStorage.removeItem(STORAGE_KEY);
     await cargarDatos();
-  }catch(error){
-    console.error('No se pudo migrar información local:',error);
   }
 }
 function progreso(p){
@@ -389,9 +376,8 @@ $('formPrograma').addEventListener('submit',async e=>{
       updated_at:new Date().toISOString()
     };
 
-    try{
-      await writeViaFunction('save_repeticion',{data});
-    }catch(error){
+    const {error}=await db.from('repeticiones').upsert(data);
+    if(error){
       alert('No se pudo guardar el programa repetido: '+error.message);
       return;
     }
@@ -410,9 +396,8 @@ $('formPrograma').addEventListener('submit',async e=>{
       data[k]=$(k).checked;
     });
 
-    try{
-      await writeViaFunction('save_programa',{data});
-    }catch(error){
+    const {error}=await db.from('programas').upsert(data);
+    if(error){
       alert('No se pudo guardar: '+error.message);
       return;
     }
@@ -434,9 +419,9 @@ $('eliminar').addEventListener('click',async()=>{
 
   if(!confirm(texto))return;
 
-  try{
-    await writeViaFunction(tipo==='repeticion'?'delete_repeticion':'delete_programa',{id});
-  }catch(error){
+  const tabla=tipo==='repeticion'?'repeticiones':'programas';
+  const {error}=await db.from(tabla).delete().eq('id',id);
+  if(error){
     alert('No se pudo eliminar: '+error.message);
     return;
   }
@@ -501,11 +486,9 @@ async function iniciar(){
 
   await migrarLocalSiHaceFalta();
 
-  // Actualiza los cambios compartidos sin depender de Realtime.
-  setInterval(()=>{
-    if(!$('modalPrograma').open){
-      cargarDatos();
-    }
-  },15000);
+  db.channel('zapatazo-cambios')
+    .on('postgres_changes',{event:'*',schema:'public',table:'programas'},()=>cargarDatos())
+    .on('postgres_changes',{event:'*',schema:'public',table:'repeticiones'},()=>cargarDatos())
+    .subscribe();
 }
 iniciar();
