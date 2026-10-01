@@ -1,5 +1,5 @@
 const SUPABASE_URL='https://jcnyvqzgjqqdiwuinula.supabase.co';
-const SUPABASE_KEY='sb_publishable__ImxqupFGPBz1t7OfMzR9Q_tiGhL_Ua';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impjbnl2cXpnanFxZGl3dWludWxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyNjIxODMsImV4cCI6MjEwNTgzODE4M30.9ztZWlPtoymkBWUN5aJmC6Ek7rZqu9RWTReRanJiHB8';
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const STORAGE_KEY='zapatazo_programas_v1';
@@ -42,7 +42,7 @@ async function cargarProgramas(){
 
   if(error){
     console.error(error);
-    estado('Error al conectar con la base compartida.');
+    estado('Error al conectar: '+(error.message||'sin respuesta del servidor'));
     $('listaProgramas').innerHTML='<div class="empty-state">No se pudo cargar la información.</div>';
     return false;
   }
